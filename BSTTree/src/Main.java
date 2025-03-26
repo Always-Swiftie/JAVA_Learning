@@ -1,15 +1,14 @@
 public class Main {
     public static void main(String[] args) {
-        BSTree2<Integer,String> Tree=new BSTree2<>();
-        AVLTree tree=new AVLTree();
-        tree.put(1,"this is 1");
-        tree.put(2,"this is 2");
-        tree.put(3,"this is 3");
-        System.out.println(tree.get(2));
-        tree.remove(3);
-        tree.remove(2);
-        System.out.println(tree.get(3));
-        System.out.println(tree.get(2));
-        tree.
+        BTree tree1=new BTree(2);
+        tree1.put(1);
+        tree1.put(2);
+        System.out.println(tree1.contains(1));
+        System.out.println(tree1.contains(2));
+        System.out.println(tree1.contains(3));
+        tree1.put(4);
+        tree1.put(5);
+        tree1.put(6);
+        System.out.println(tree1.contains(4));
     }
 }
