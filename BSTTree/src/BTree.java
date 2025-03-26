@@ -28,6 +28,56 @@ public class BTree {
             }
             return isLeaf ? null : children[i].get(key);
         }
+        int removeKey(int index){
+            int t=keys[index];//待删除位置的key
+            System.arraycopy(keys,index+1,keys,index,--keyCount-index);
+            return t;
+        }
+        Node removeChild(int index){
+            Node t=children[index];
+            int count=children.length;
+            System.arraycopy(children,index+1,children,index,count-1-index);
+            return t;
+        }
+        void insertKey(int key,int index){
+            //先把待删除位置后的所有元素后移一位
+            System.arraycopy(keys,index,keys,index+1,keyCount);
+            keys[index]=key;
+        }
+        void insertChild(Node child,int index){
+            System.arraycopy(children,index,children,index+1,children.length);
+            children[index]=child;
+        }
+        int removeLeftmostKey(){
+            return removeKey(0);
+        }
+        int removeRightmostKey(){
+            return removeKey(keyCount-1);
+        }
+        Node removeLeftmostChild(){
+            return removeChild(0);
+        }
+        Node removeRightmostChild(){
+            return removeChild(children.length-1);
+        }
+        Node childLeftSibling(int index){
+            return index>0?children[index-1]:null;
+        }
+        Node childRightSibling(int index){
+            return index==keyCount?null:children[index+1];
+        }
+        void moveToTarget(Node target){
+            int start=target.keyCount;
+            if(isLeaf){
+                for(int i=0;i<=keyCount;i++){
+                    target.children[start+i]=children[i];
+                }
+            }
+            for (int i=0;i<keyCount;i++){
+                target.keys[target.keyCount++]=keys[i];
+            }
+        }
+
     }
 
     int t;              // 最小度数
