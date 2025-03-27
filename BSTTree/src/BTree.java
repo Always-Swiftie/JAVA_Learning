@@ -91,6 +91,14 @@ public class BTree {
         MAX_KEY_NUMBER = 2 * t - 1;
         MIN_KEY_NUMBER = t - 1;
     }
+    public int[] find(int key){
+        Node target=root.get(key);
+        if(target==null){//说明没有找到这个key
+            return null;
+        }
+        //如果target!=null,说明要找的key就在这个target节点里面
+        return target.keys;
+    }
 
     // 是否存在
     public boolean contains(int key) {
