@@ -242,7 +242,7 @@ public class BTree {
             if(!rightSibling.isLeaf){
                 x.insertChild(rightSibling.removeLeftmostChild(),x.keyCount+1);
             }
-            parent.keys[i]=x.removeLeftmostKey();//兄弟上去
+            parent.keys[i]=rightSibling.removeLeftmostKey();//兄弟上去
         }
         //case5-3 两边都不够借，向左合并
         //a.x有左兄弟-合并到左兄弟
