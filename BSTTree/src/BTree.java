@@ -35,7 +35,7 @@ public class BTree {
         }
         Node removeChild(int index){
             Node t=children[index];
-            int count=children.length;
+            int count=keyCount+1;
             System.arraycopy(children,index+1,children,index,count-1-index);
             return t;
         }
@@ -217,44 +217,91 @@ public class BTree {
             balance(parent,node,index);
         }
     }
-    private void balance(Node parent,Node x,int i){
-        //case6 根节点
-        if(x==root){
-            if(root.keyCount==0&&root.children[0]!=null){
-                root=root.children[0];
+    private void balance(Node parent, Node x, int i) {
+        // case6 根节点
+        if (x == root) {
+            if (root.keyCount == 0 && root.children[0] != null) {
+                root = root.children[0];
             }
             return;
         }
-        Node leftSibling=parent.childLeftSibling(i);
-        Node rightSibling=parent.childRightSibling(i);
-        //case5-1:左边兄弟可以借，右旋
-         if(leftSibling!=null&&leftSibling.keyCount>MIN_KEY_NUMBER){
-             x.insertKey(parent.keys[i-1],0);//父亲下来
-             if(!leftSibling.isLeaf){//如果兄弟不是叶子，有孩子，在下一步之后兄弟会少一个孩子
-                 x.insertChild(leftSibling.removeRightmostChild(),0);//把兄弟最右边的孩子给被调整节点
-             }
-             parent.keys[i-1]=leftSibling.removeRightmostKey();//兄弟上去
-             return;
-         }
-        //case5-2:右边兄弟可以借，左旋
-        if(rightSibling!=null&&rightSibling.keyCount>MIN_KEY_NUMBER){
-            x.insertKey(parent.keys[i],x.keyCount);//父亲下来
-            if(!rightSibling.isLeaf){
-                x.insertChild(rightSibling.removeLeftmostChild(),x.keyCount+1);
+
+        Node leftSibling = parent.childLeftSibling(i);
+        Node rightSibling = parent.childRightSibling(i);
+
+        // case5-1: 左边兄弟可以借
+        if (leftSibling != null && leftSibling.keyCount > MIN_KEY_NUMBER) {
+            // 父节点key下移
+            x.insertKey(parent.keys[i - 1], 0);
+            parent.keys[i - 1] = leftSibling.removeRightmostKey();
+
+            if (!leftSibling.isLeaf) {
+                x.insertChild(leftSibling.removeRightmostChild(), 0);
             }
-            parent.keys[i]=rightSibling.removeLeftmostKey();//兄弟上去
+            return;
         }
-        //case5-3 两边都不够借，向左合并
-        //a.x有左兄弟-合并到左兄弟
-        if(leftSibling!=null){
+
+        // case5-2: 右边兄弟可以借
+        if (rightSibling != null && rightSibling.keyCount > MIN_KEY_NUMBER) {
+            // 父节点key下移
+            x.insertKey(parent.keys[i], x.keyCount);
+            parent.keys[i] = rightSibling.removeLeftmostKey();
+
+            if (!rightSibling.isLeaf) {
+                x.insertChild(rightSibling.removeLeftmostChild(), x.keyCount + 1);
+            }
+            return;
+        }
+
+        // case5-3: 合并操作
+        if (leftSibling != null) {
+            // 合并到左兄弟
+            leftSibling.keys[leftSibling.keyCount++] = parent.removeKey(i - 1);
+            System.arraycopy(x.keys, 0, leftSibling.keys, leftSibling.keyCount, x.keyCount);
+            if (!x.isLeaf) {
+                System.arraycopy(x.children, 0, leftSibling.children, leftSibling.keyCount, x.keyCount + 1);
+            }
+            leftSibling.keyCount += x.keyCount;
             parent.removeChild(i);
-            leftSibling.insertKey(parent.removeKey(i-1),leftSibling.keyCount);
-            x.moveToTarget(leftSibling);//赋值当前节点所有的key,child到目标节点
-        }else{//b.x没有左兄弟-合并到x自己，移除右边兄弟
-            parent.removeChild(i+1);
-            x.insertKey(parent.removeKey(i),x.keyCount);
-            rightSibling.moveToTarget(x);
+        } else {
+            // 合并到当前节点
+            x.keys[x.keyCount++] = parent.removeKey(i);
+            System.arraycopy(rightSibling.keys, 0, x.keys, x.keyCount, rightSibling.keyCount);
+            if (!x.isLeaf) {
+                System.arraycopy(rightSibling.children, 0, x.children, x.keyCount + 1, rightSibling.keyCount + 1);
+            }
+            x.keyCount += rightSibling.keyCount;
+            parent.removeChild(i + 1);
         }
+
+        // 检查父节点是否需要重新平衡
+        if (parent.keyCount < MIN_KEY_NUMBER && parent != root) {//父结点发生了下溢出
+            // 需要找到parent在它的parent中的index
+            Node grandParent = findParent(root, parent);
+            int parentIndex = 0;
+            while (parentIndex <= grandParent.keyCount && grandParent.children[parentIndex] != parent) {
+                parentIndex++;
+            }
+            balance(grandParent, parent, parentIndex);
+        }
+    }
+
+    // 辅助方法：查找节点的父节点
+    private Node findParent(Node current, Node child) {
+        if (current == null || current.isLeaf) {
+            return null;
+        }
+
+        for (int i = 0; i <= current.keyCount; i++) {
+            if (current.children[i] == child) {
+                return current;
+            }
+            Node found = findParent(current.children[i], child);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
     }
 
 }
