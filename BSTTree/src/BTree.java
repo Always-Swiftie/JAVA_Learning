@@ -30,7 +30,8 @@ public class BTree {
         }
         int removeKey(int index){
             int t=keys[index];//待删除位置的key
-            System.arraycopy(keys,index+1,keys,index,--keyCount-index);
+            System.arraycopy(keys,index+1,keys,index,keyCount-index-1);
+            keyCount--;
             return t;
         }
         Node removeChild(int index){
@@ -41,8 +42,9 @@ public class BTree {
         }
         void insertKey(int key,int index){
             //先把待删除位置后的所有元素后移一位
-            System.arraycopy(keys,index,keys,index+1,keyCount);
+            System.arraycopy(keys,index,keys,index+1,keyCount-index);
             keys[index]=key;
+            keyCount++;
         }
         void insertChild(Node child,int index){
             System.arraycopy(children,index,children,index+1,children.length);
